@@ -113,11 +113,12 @@ class GeocoderPresenter @JvmOverloads constructor(
     fun getInfoFromLocation(latLng: LatLng) {
         view?.willGetLocationInfo(latLng)
         val disposable = geocoderRepository.getFromLocation(latLng)
-                .observeOn(scheduler)
+                .observeOn(Schedulers.io())
                 .retry(RETRY_COUNT.toLong())
                 .filter { addresses -> addresses.isNotEmpty() }
                 .map { addresses -> addresses[0] }
                 .flatMap { address -> returnTimeZone(address) }
+                .observeOn(scheduler)
                 .subscribe({ pair: Pair<Address, TimeZone?> -> view?.showLocationInfo(pair) },
                         { view?.showGetLocationInfoError() },
                         { view?.didGetLocationInfo() })
